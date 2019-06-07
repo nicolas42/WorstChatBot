@@ -1,0 +1,88 @@
+DonBot.r
+{copyToClipboard - http://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
+
+
+DonBot
+
+quotes
+http://www.imdb.com/character/ch0031457/quotes
+https://en.wikiquote.org/wiki/Mad_Men
+
+urls: [
+http://www.imdb.com/character/ch0031457/quotes
+https://en.wikiquote.org/wiki/Mad_Men
+]
+
+a: collect [ foreach url urls [ 
+	; parse page [ thru {<body} thru {>} copy data to </body> ]
+	keep remove-each tag load/markup url [tag? tag] ] 
+]
+write clipboard:// a
+
+remove-each a a [ empty? trim a ]
+
+write clipboard:// a
+
+
+
+; http://www.rebol.com/oneliners.html
+
+}
+
+rebol []
+
+urls: [
+	http://www.imdb.com/character/ch0031457/quotes
+	https://en.wikiquote.org/wiki/Mad_Men
+]
+pages: []
+
+foreach url urls [ append pages read url ] 
+
+body: {}
+lines: []
+
+foreach page pages [ 	
+	parse page [ to {<body} copy body to </body> to end ]
+	append lines remove-each tag load/markup body [tag? tag] ] 
+]
+
+write clipboard:// rejoin lines
+
+
+
+markov-chain: funct [
+	"Generate impressively readable gibberish from a sample text"
+	txt
+][
+	chain: copy []
+	random/seed now
+
+	w: parse txt none ;words
+
+	;i: ["is" "a"] ;input
+	rw: at w random -2 + length? w ;random word
+	i: reduce [rw/1 rw/2] ;input
+	
+	insert w reduce [none none]
+
+	append chain i
+
+	loop 50 [
+		
+		wp: w ;words pointer
+		o: copy [] ;output
+		
+		;Find all occurences of these two words, and the word that comes after them
+		while [wp: find/tail wp i][append o wp/1]
+
+		;append a random one to the chain
+		ro: random/only o
+		append chain ro
+		
+		;make input again
+		i: reduce [second i ro]
+	]
+
+	chain
+]
